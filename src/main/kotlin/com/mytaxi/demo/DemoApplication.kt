@@ -11,42 +11,45 @@ class DemoApplication
 fun main(args: Array<String>) {
     runApplication<DemoApplication>(*args)
     val apiClient = ApiClient()
-    apiClient.getWeatherInfo("bo")
-    apiClient.getWeatherByGps(Pair(50.068, -5.316))
+    apiClient.getWeatherInfo("bo").map { print(it.title) }
+    apiClient.getWeatherByGps(Pair(50.068, -5.316)).map { println(it) }
+
 }
 
 
 class ApiClient {
 
-    fun getWeatherInfo(query: String) {
-
+    fun getWeatherInfo(query: String): Array<Response> {
+        var data = arrayOf<Response>()
         Fuel.get("https://www.metaweather.com/api/location/search/?query="
                 + query).responseObject(Response.Deserializer()) { request, response, result ->
             when (result) {
                 is Result.Failure -> {
                     val ex = result.getException()
+                    println(ex)
                 }
                 is Result.Success -> {
-                    val data = result.get()
-                    data.map { println(it.title) }
+                    data = result.get()
                 }
             }
         }
+        return data
     }
 
-    fun getWeatherByGps(location: Pair<Double, Double>) {
-
+    fun getWeatherByGps(location: Pair<Double, Double>): Array<Response> {
+        var data = arrayOf<Response>()
         Fuel.get("https://www.metaweather.com/api/location/search/?lattlong="
                 + location.first + "," + location.second).responseObject(Response.Deserializer()) { request, response, result ->
             when (result) {
                 is Result.Failure -> {
                     val ex = result.getException()
+                    println(ex)
                 }
                 is Result.Success -> {
-                    val data = result.get()
-                    data.map { println(it) }
+                    data = result.get()
                 }
             }
         }
+        return data
     }
 }
