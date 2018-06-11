@@ -2,6 +2,7 @@ package com.mytaxi.demo
 
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.result.Result
+import com.google.gson.Gson
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
@@ -11,7 +12,7 @@ class DemoApplication
 fun main(args: Array<String>) {
     runApplication<DemoApplication>(*args)
     val apiClient = ApiClient()
-    apiClient.getWeatherInfo("bo").map { print(it.title) }
+    apiClient.getWeatherInfo("bo")
     apiClient.getWeatherByGps(Pair(50.068, -5.316)).map { println(it) }
 
 }
@@ -19,8 +20,7 @@ fun main(args: Array<String>) {
 
 class ApiClient {
 
-    fun getWeatherInfo(query: String): Array<Response> {
-        var data = arrayOf<Response>()
+    fun getWeatherInfo(query: String) {
         Fuel.get("https://www.metaweather.com/api/location/search/?query="
                 + query).responseObject(Response.Deserializer()) { request, response, result ->
             when (result) {
@@ -29,27 +29,17 @@ class ApiClient {
                     println(ex)
                 }
                 is Result.Success -> {
-                    data = result.get()
+                    result.get().map { println(it.title) }
+
                 }
             }
         }
-        return data
     }
 
     fun getWeatherByGps(location: Pair<Double, Double>): Array<Response> {
-        var data = arrayOf<Response>()
-        Fuel.get("https://www.metaweather.com/api/location/search/?lattlong="
-                + location.first + "," + location.second).responseObject(Response.Deserializer()) { request, response, result ->
-            when (result) {
-                is Result.Failure -> {
-                    val ex = result.getException()
-                    println(ex)
-                }
-                is Result.Success -> {
-                    data = result.get()
-                }
-            }
-        }
-        return data
+        val (request, response, result) = Fuel.get("https://www.metaweather.com/api/location/search/?lattlong="
+                + location.first + "," + location.second).responseString()
+        val res = Gson().fromJson(result.component1(), Array<Response>::class.java)
+        return res
     }
 }
