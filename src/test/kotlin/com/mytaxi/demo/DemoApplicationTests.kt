@@ -9,11 +9,15 @@ import org.springframework.test.context.junit4.SpringRunner
 @RunWith(SpringRunner::class)
 @SpringBootTest
 class DemoApplicationTests {
+    companion object {
+        val BARCELONA_COORDINATES = Pair(41.3851, 2.1734)
+    }
 
     @Test
     fun shouldGetWeatherBasedOnGps() {
         val apiClient = ApiClient()
-        assertEquals(apiClient.getWeatherByGps(Pair(41.3851, 2.1734))[0].title, "Barcelona")
+        val expectedString = "Barcelona"
+        assertEquals(apiClient.getWeatherByGps(BARCELONA_COORDINATES)[0].title, expectedString)
     }
 
 }
